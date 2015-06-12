@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "ar-drone": "^0.3.3",
-    "dronestream": "^1.1.1"
+    "dronestream": "^1.1.1",
+    "socket.io": "^1.3.5"
   }
 }

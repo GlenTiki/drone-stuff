@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title>Stream as module</title>
+  <script src="/dronestream/nodecopter-client.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/socket.io/socket.io.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+  <div id="droneStream" style="width: 640px; height: 360px; margin: auto;">   </div>
+
+  <script type="text/javascript" charset="utf-8">
+    new NodecopterStream(document.getElementById("droneStream"));
+    var socket = io("http://localhost:5555");
+    var keys = {
+      rise: false, 
+      fall: false,
+      forward: false,
+      back: false,
+      turnLeft: false,
+      turnRight: false,
+      land: false
+    };
+    var droneState = {
+      rising: false, 
+      falling: false,
+      goingForward: false,
+      goingBack: false,
+      turningLeft: false,
+      turningRight: false,
+      landing: false,
+      landed: false
+    };
+
+    document.onkeydown = manageKeyboardEvents(true);
+    document.onkeyup = manageKeyboardEvents(false); 
+    
+    function manageKeyboardEvents(state){
+    return function(keyboardEvent){
+        keycode = keyboardEvent.keyCode;
+        switch(keycode){
+          case 38: case 87:
+            keys.forward = state;
+            break;
+          case 40: case 83:
+            keys.back = state;
+            break;
+          case 37: case 65:
+            keys.turnLeft = state;
+            break;
+          case 39: case 68:
+            keys.turnRight = state;
+            break;
+          case 32:
+            keys.rise = state;
+            break;
+          case 16:
+            keys.fall = state;
+            break;
+          case 69:
+            keys.land = state;
+            break;
+        }
+      } 
+    }
+
+    function calculateDroneState(){
+      
+      // if landed and the land button was pressed,
+      // take drone off and don't take any input for 1 second.
+      if(droneState.landed && keys.land){
+        socket.emit('takeoff');
+        droneState.landed = false;
+        droneState.landing = true;
+        setTimeout(function(){
+          droneState.landing = false;    
+        }, 1000)
+        return;
+      }
+      
+      // while landing, don't take input.
+      if(droneState.landing) return;
+
+      // set everything to false.
+      droneState = {
+         rising: false, 
+         falling: false,
+         goingForward: false,
+         goingBack: false,
+         turningLeft: false,
+         turningRight: false,
+         landing: false,
+       };
+       
+       // land when land button is pressed && drone is flying
+       if(!droneState.landed && keys.land){
+         droneState.landing = true;
+         return;
+       } 
+       if(keys.forward && !keys.back){
+           droneState.goingForward = true;
+       }
+       if(keys.back && !keys.forward){
+           droneState.goingBack = true;
+       }
+       if(keys.turnLeft && !keys.turnRight){
+         droneState.turningLeft = true;
+       }
+       if(keys.turnRight && !keys.turnRight){
+         droneState.turningRight = true;
+       }
+       if(keys.rise && !keys.fall){
+         droneState.rising = true;
+       }
+       if(keys.fall && !keys.rise){
+         droneState.falling = true;
+       }
+    };
+
+    socket.on('landed', function(){
+      droneState.landing = false;
+      droneState.landed = true;    
+    });
+
+    var emitStateInterval = setInterval(function sendState(){
+        socket.emit('droneState', droneState);    
+    }, 500);
+
+
+    var calculateStateInterval = setInterval(calculateDroneState, 100);
+  </script>
+</body>
+</html>

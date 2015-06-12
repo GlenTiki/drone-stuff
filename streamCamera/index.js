@@ -8,7 +8,7 @@ var server = http.createServer(function(req, res) {
 
   client.takeoff();
 
-  client.stop();
+  client
   .after(6000, function(){
     console.log(this);
     this.clockwise(0.5);
@@ -20,6 +20,6 @@ var server = http.createServer(function(req, res) {
 });
 
 drone.listen(server);
-server.listen(5555);
+server.listen(7555);
 
 
