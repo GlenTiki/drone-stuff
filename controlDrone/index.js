@@ -69,16 +69,16 @@ io.on("connection", function(socket){
       client.left(-0.5);
     }
     if(state.turningLeft){
-      client.clockwise(-0.5);
+      client.clockwise(-0.8);
     }
     if(state.turningRight){
-      client.clockwise(0.5);
+      client.clockwise(0.8);
     }
     if(state.rising){
-      client.up(0.5)
+      client.up(0.8)
     }
     if(state.falling){
-      client.up(-0.5)
+      client.up(-0.8)
     }
   });
 });
